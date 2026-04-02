@@ -214,7 +214,11 @@ func scanRequest(row scannable) (*domain.AccessRequest, error) {
 	return &req, nil
 }
 
-func scanRequests(rows interface{ Next() bool; Err() error; Scan(...any) error }) ([]*domain.AccessRequest, error) {
+func scanRequests(rows interface {
+	Next() bool
+	Err() error
+	Scan(...any) error
+}) ([]*domain.AccessRequest, error) {
 	var reqs []*domain.AccessRequest
 	for rows.Next() {
 		req, err := scanRequest(rows)

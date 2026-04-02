@@ -21,21 +21,21 @@ import (
 // AMD SEV-SNP attestation report layout (1184 bytes total).
 // Ref: AMD SEV-SNP API Specification, Section 8.17 (ATTESTATION_REPORT).
 const (
-	snpReportSize       = 1184
-	snpMeasurementOff  = 0x90 // offset 144, 48 bytes  (SHA-384)
-	snpHostDataOff     = 0xC0 // offset 192, 32 bytes
-	snpReportDataOff   = 0x50 // offset  80, 64 bytes  (guest-provided, TEE puts EC pub key here)
-	snpPolicyOff       = 0x08 // offset   8, 8 bytes   (uint64)
-	snpVersionOff      = 0x00 // offset   0, 4 bytes
-	snpGuestSVNOff     = 0x04 // offset   4, 4 bytes
-	snpSignatureOff    = 0x2A0 // offset 672, 512 bytes
+	snpReportSize     = 1184
+	snpMeasurementOff = 0x90  // offset 144, 48 bytes  (SHA-384)
+	snpHostDataOff    = 0xC0  // offset 192, 32 bytes
+	snpReportDataOff  = 0x50  // offset  80, 64 bytes  (guest-provided, TEE puts EC pub key here)
+	snpPolicyOff      = 0x08  // offset   8, 8 bytes   (uint64)
+	snpVersionOff     = 0x00  // offset   0, 4 bytes
+	snpGuestSVNOff    = 0x04  // offset   4, 4 bytes
+	snpSignatureOff   = 0x2A0 // offset 672, 512 bytes
 )
 
 // Policy bit: if bit 19 is set, debug mode is enabled — NOT allowed in production.
 const snpDebugPolicyBit = uint64(1 << 19)
 
 type AttestationService struct {
-	cfg    config.AMDConfig
+	cfg     config.AMDConfig
 	arkCert *x509.Certificate // AMD Root Key
 }
 
@@ -68,7 +68,7 @@ func NewAttestationService(cfg config.AMDConfig) (*AttestationService, error) {
 func (s *AttestationService) Verify(
 	report domain.AttestationReport,
 	expectedMeasurement string, // hex-encoded SHA-384 of the trusted TEE binary
-	requestID string,            // used to verify host_data binding
+	requestID string, // used to verify host_data binding
 ) (teePublicKeyPEM string, parsed *domain.ParsedSNPReport, err error) {
 
 	// 1. Decode raw report
@@ -138,8 +138,8 @@ func (s *AttestationService) Verify(
 	}
 
 	// 8. Extract TEE ephemeral EC public key from report_data
-	//    Convention: report_data[0:65] = uncompressed EC P-256 public key (04 || X || Y)
-	teePublicKeyPEM, err = ecPublicKeyToPEM(parsed.ReportData[:65])
+	//    Convention: report_data[0:64] = uncompressed EC P-256 public key (04 || X || Y)
+	teePublicKeyPEM, err = ecPublicKeyToPEM(parsed.ReportData[:])
 	if err != nil {
 		return "", nil, fmt.Errorf("extract TEE public key from report_data: %w", err)
 	}
@@ -197,14 +197,14 @@ func (s *AttestationService) verifyReportSignature(rawReport []byte, vcekCertPEM
 	sigBytes := rawReport[snpSignatureOff : snpSignatureOff+96] // r(48) + s(48)
 
 	r := new(big.Int).SetBytes(sigBytes[:48])
-	s := new(big.Int).SetBytes(sigBytes[48:96])
+	sig_s := new(big.Int).SetBytes(sigBytes[48:96])
 
 	// SHA-384 digest of the signed portion
 	h := sha512.New384()
 	h.Write(signedPart)
 	digest := h.Sum(nil)
 
-	if !ecdsa.Verify(ecPub, digest, r, s) {
+	if !ecdsa.Verify(ecPub, digest, r, sig_s) {
 		return fmt.Errorf("ECDSA signature verification failed")
 	}
 	return nil

@@ -61,6 +61,30 @@ func (h *Handler) GetPolicy(w http.ResponseWriter, r *http.Request) {
 }
 
 // ---------------------------------------------------------------------------
+// Form submission from web UI
+// POST /api/v1/form-submissions
+// ---------------------------------------------------------------------------
+
+func (h *Handler) SubmitForm(w http.ResponseWriter, r *http.Request) {
+	var body domain.SubmitFormBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body: "+err.Error())
+		return
+	}
+	if body.Payload == nil {
+		writeError(w, http.StatusBadRequest, "payload is required")
+		return
+	}
+
+	sub, err := h.accessReq.StoreFormSubmission(r.Context(), body.Payload)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusCreated, domain.APIResponse{Status: "success", Message: "form submission stored", Data: sub})
+}
+
+// ---------------------------------------------------------------------------
 // Phase 1 — Consumer creates access request
 // POST /api/v1/access-requests
 // ---------------------------------------------------------------------------

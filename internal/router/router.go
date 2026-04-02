@@ -19,6 +19,7 @@ func New(h *handler.Handler, jwtMW *middleware.JWTMiddleware) http.Handler {
 	r.Use(chimiddleware.RealIP)
 	r.Use(chimiddleware.RequestID)
 	r.Use(jsonContentType)
+	r.Use(cors)
 
 	// ---------------------------------------------------------------------------
 	// Public routes
@@ -35,8 +36,8 @@ func New(h *handler.Handler, jwtMW *middleware.JWTMiddleware) http.Handler {
 	// Policy endpoints — Phase 0.
 	// ConMan pushes a policy; TOP fetches it. Internal network only (no user JWT).
 	r.Route("/api/v1/policy", func(r chi.Router) {
-		r.Post("/", h.ReceivePolicy)              // ConMan → APD: store policy
-		r.Get("/{policyId}", h.GetPolicy)         // TOP   → APD: fetch policy
+		r.Post("/", h.ReceivePolicy)      // ConMan → APD: store policy
+		r.Get("/{policyId}", h.GetPolicy) // TOP   → APD: fetch policy
 	})
 
 	// TEE callbacks — called by the TEE Orchestrator (internal network only).
@@ -46,6 +47,18 @@ func New(h *handler.Handler, jwtMW *middleware.JWTMiddleware) http.Handler {
 		r.Post("/attestation", h.SubmitAttestation) // Phase 3
 		r.Post("/result", h.TEEResult)              // Phase 5
 	})
+
+	// ---------------------------------------------------------------------------
+	// Form submission endpoint (from web UI)
+	// ---------------------------------------------------------------------------
+	r.Post("/api/v1/form-submissions", h.SubmitForm)
+
+	// ---------------------------------------------------------------------------
+	// Static UI files
+	// ---------------------------------------------------------------------------
+	r.Get("/web", http.RedirectHandler("/web/index.html", http.StatusFound).ServeHTTP)
+	r.Get("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("../web"))).ServeHTTP)
+	r.Get("/web/*", http.StripPrefix("/web/", http.FileServer(http.Dir("../web"))).ServeHTTP)
 
 	// ---------------------------------------------------------------------------
 	// Authenticated routes
@@ -89,6 +102,19 @@ func New(h *handler.Handler, jwtMW *middleware.JWTMiddleware) http.Handler {
 func jsonContentType(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func cors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
 }

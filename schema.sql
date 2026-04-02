@@ -139,6 +139,18 @@ CREATE INDEX idx_audit_log_request ON audit_log (request_id);
 CREATE INDEX idx_audit_log_created ON audit_log (created_at);
 
 -- ---------------------------------------------------------------------------
+-- Form submissions (web UI JSON payloads)
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE form_submissions (
+    id          UUID PRIMARY KEY,
+    payload     JSONB NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_form_submissions_created ON form_submissions (created_at);
+
+-- ---------------------------------------------------------------------------
 -- User client credentials
 --
 -- Hashed credentials for APD-issued API access tokens.

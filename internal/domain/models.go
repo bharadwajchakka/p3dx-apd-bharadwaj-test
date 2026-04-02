@@ -28,10 +28,10 @@ const (
 	StatusConsentDenied          Status = "CONSENT_DENIED"
 
 	// Phase 4 – data access (cases 2 & 3 need key release)
-	StatusKeyReleased        Status = "KEY_RELEASED"
-	StatusDataFetching       Status = "DATA_FETCHING"
+	StatusKeyReleased         Status = "KEY_RELEASED"
+	StatusDataFetching        Status = "DATA_FETCHING"
 	StatusComputationComplete Status = "COMPUTATION_COMPLETE"
-	StatusResultDelivered    Status = "RESULT_DELIVERED"
+	StatusResultDelivered     Status = "RESULT_DELIVERED"
 )
 
 // ---------------------------------------------------------------------------
@@ -41,8 +41,8 @@ const (
 type AccessType string
 
 const (
-	AccessTypeOpen         AccessType = "OPEN"          // Case 1: open folder/URL
-	AccessTypeSSHEncrypted AccessType = "SSH_ENCRYPTED" // Case 2: SSH + decryption key
+	AccessTypeOpen         AccessType = "OPEN"           // Case 1: open folder/URL
+	AccessTypeSSHEncrypted AccessType = "SSH_ENCRYPTED"  // Case 2: SSH + decryption key
 	AccessTypeEncrypted    AccessType = "ENCRYPTED_ONLY" // Case 3: encrypted, no SSH
 )
 
@@ -51,24 +51,24 @@ const (
 // ---------------------------------------------------------------------------
 
 type AccessRequest struct {
-	ID          string     `json:"id"`
-	ConsumerID  string     `json:"consumerId"`
-	ProviderID  string     `json:"providerId"`
-	ItemID      string     `json:"itemId"`
-	Status      Status     `json:"status"`
-	AccessType  AccessType `json:"accessType"`
+	ID         string     `json:"id"`
+	ConsumerID string     `json:"consumerId"`
+	ProviderID string     `json:"providerId"`
+	ItemID     string     `json:"itemId"`
+	Status     Status     `json:"status"`
+	AccessType AccessType `json:"accessType"`
 
 	// Pre-approval window
-	PreApprovedAt *time.Time `json:"preApprovedAt,omitempty"`
+	PreApprovedAt     *time.Time `json:"preApprovedAt,omitempty"`
 	PreApprovalExpiry *time.Time `json:"preApprovalExpiry,omitempty"`
 
 	// TEE
-	TEEID             *string    `json:"teeId,omitempty"`
-	TEEPublicKey      *string    `json:"teePublicKey,omitempty"` // EC pub key from attestation
-	ExpectedMeasurement string   `json:"expectedMeasurement"`    // SHA-384 of trusted TEE binary
+	TEEID               *string `json:"teeId,omitempty"`
+	TEEPublicKey        *string `json:"teePublicKey,omitempty"` // EC pub key from attestation
+	ExpectedMeasurement string  `json:"expectedMeasurement"`    // SHA-384 of trusted TEE binary
 
 	// Attestation
-	AttestationReport *string    `json:"attestationReport,omitempty"` // raw base64
+	AttestationReport     *string    `json:"attestationReport,omitempty"` // raw base64
 	AttestationVerifiedAt *time.Time `json:"attestationVerifiedAt,omitempty"`
 
 	// Runtime consent
@@ -79,11 +79,11 @@ type AccessRequest struct {
 	EncryptedResult *string `json:"encryptedResult,omitempty"`
 
 	// Dataset + app metadata (from catalogue / consumer request)
-	AssetName        string `json:"assetName"`
-	AssetType        string `json:"assetType"`
-	ResourceURL      string `json:"resourceUrl"`      // where provider data lives
-	AppImageHash     string `json:"appImageHash"`      // expected TEE binary hash
-	AppImageID       string `json:"appImageId"`
+	AssetName         string `json:"assetName"`
+	AssetType         string `json:"assetType"`
+	ResourceURL       string `json:"resourceUrl"`  // where provider data lives
+	AppImageHash      string `json:"appImageHash"` // expected TEE binary hash
+	AppImageID        string `json:"appImageId"`
 	ConsumerPublicKey string `json:"consumerPublicKey"` // result encrypted to this
 
 	AdditionalInfo map[string]interface{} `json:"additionalInfo,omitempty"`
@@ -128,7 +128,7 @@ type Contract struct {
 
 type AppDetails struct {
 	ImageID     string            `json:"imageId"`
-	ImageHash   string            `json:"imageHash"`   // expected SEV-SNP measurement
+	ImageHash   string            `json:"imageHash"` // expected SEV-SNP measurement
 	Version     string            `json:"version"`
 	EntryPoint  string            `json:"entryPoint"`
 	Environment map[string]string `json:"environment,omitempty"`
@@ -252,10 +252,20 @@ type TokenRequest struct {
 	ClientSecret string `json:"clientSecret"`
 }
 
+type FormSubmission struct {
+	ID        string                 `json:"id"`
+	Payload   map[string]interface{} `json:"payload"`
+	CreatedAt time.Time              `json:"createdAt"`
+}
+
+type SubmitFormBody struct {
+	Payload map[string]interface{} `json:"payload"`
+}
+
 type TokenResponse struct {
-	AccessToken     string `json:"accessToken"`
-	TokenType       string `json:"tokenType"`
-	ExpiresInMinutes int   `json:"expiresInMinutes"`
+	AccessToken      string `json:"accessToken"`
+	TokenType        string `json:"tokenType"`
+	ExpiresInMinutes int    `json:"expiresInMinutes"`
 }
 
 type APIResponse struct {

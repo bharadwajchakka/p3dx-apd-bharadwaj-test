@@ -42,6 +42,7 @@ func main() {
 	// ---------------------------------------------------------------------------
 	accessRequestRepo := repository.NewAccessRequestRepo(pool)
 	consentTokenRepo := repository.NewConsentTokenRepo(pool)
+	formSubmissionRepo := repository.NewFormSubmissionRepo(pool)
 
 	// ---------------------------------------------------------------------------
 	// Services
@@ -66,11 +67,9 @@ func main() {
 		attestSvc,
 		consentSvc,
 		emailSvc,
+		formSubmissionRepo,
 	)
 
-	// ---------------------------------------------------------------------------
-	// Handlers & Router
-	// ---------------------------------------------------------------------------
 	h := handler.New(accessReqSvc)
 
 	jwtMW, err := middleware.NewJWTMiddleware(cfg.JWT.PublicKeyPath)

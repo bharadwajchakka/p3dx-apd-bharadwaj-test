@@ -15,11 +15,12 @@ import (
 
 // AccessRequestService orchestrates the full TEE-based data access lifecycle.
 type AccessRequestService struct {
-	repo        *repository.AccessRequestRepo
-	tee         *TEEService
-	attest      *AttestationService
-	consent     *ConsentService
-	email       *EmailService
+	repo               *repository.AccessRequestRepo
+	tee                *TEEService
+	attest             *AttestationService
+	consent            *ConsentService
+	email              *EmailService
+	formSubmissionRepo *repository.FormSubmissionRepo
 
 	// Phase 0: policies received from ConMan, keyed by policyId
 	policyMu sync.RWMutex
@@ -32,14 +33,16 @@ func NewAccessRequestService(
 	attest *AttestationService,
 	consent *ConsentService,
 	email *EmailService,
+	formSubmissionRepo *repository.FormSubmissionRepo,
 ) *AccessRequestService {
 	return &AccessRequestService{
-		repo:     repo,
-		tee:      tee,
-		attest:   attest,
-		consent:  consent,
-		email:    email,
-		policies: make(map[string]*domain.Policy),
+		repo:               repo,
+		tee:                tee,
+		attest:             attest,
+		consent:            consent,
+		email:              email,
+		formSubmissionRepo: formSubmissionRepo,
+		policies:           make(map[string]*domain.Policy),
 	}
 }
 
@@ -88,6 +91,27 @@ func (s *AccessRequestService) GetPolicy(ctx context.Context, policyID string) (
 		return nil, fmt.Errorf("policy %q has expired", policyID)
 	}
 	return policy, nil
+}
+
+// StoreFormSubmission persists JSON payloads from form-test/web.
+func (s *AccessRequestService) StoreFormSubmission(
+	ctx context.Context,
+	payload map[string]interface{},
+) (*domain.FormSubmission, error) {
+	if s.formSubmissionRepo == nil {
+		return nil, errors.New("form submission repository not configured")
+	}
+
+	sub := &domain.FormSubmission{
+		ID:        uuid.NewString(),
+		Payload:   payload,
+		CreatedAt: time.Now(),
+	}
+
+	if err := s.formSubmissionRepo.Create(ctx, sub); err != nil {
+		return nil, fmt.Errorf("store form submission: %w", err)
+	}
+	return sub, nil
 }
 
 // ---------------------------------------------------------------------------
