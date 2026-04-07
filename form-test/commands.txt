@@ -1,0 +1,22 @@
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=myuser
+export DB_PASSWORD=secret
+export DB_NAME=apd_go
+
+export TEE_ORCHESTRATOR_URL=http://localhost:9000
+export APD_BASE_URL=http://localhost:8080
+export TEE_ORCHESTRATOR_URL=http://localhost:9000
+export APD_SIGNING_KEY_PATH=~/keys/apd-signing-key.pem
+export JWT_PRIVATE_KEY_PATH=~/keys/jwt-private.pem
+export JWT_PUBLIC_KEY_PATH=~/keys/jwt-public.pem
+
+terminal-0:
+sudo /etc/init.d/postgresql start
+sudo /etc/init.d/postgresql status
+
+terminal-1:
+go run ./cmd/server
+
+terminal-2:
+python3 -m http.server 8000

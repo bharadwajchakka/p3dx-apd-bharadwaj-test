@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Compute and config Forms</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <h1>Compute Forms Demo</h1>
+
+    <div class="btn-row">
+      <button id="dataOwnerBtn">Data Owner</button>
+      <button id="outputOwnerBtn">Output Owner</button>
+    </div>
+
+    <section id="dataFormSection" class="form-section hidden">
+      <h2>Data Owner Form</h2>
+      <form id="dataForm">
+        <label>Form ID: <input name="form_id" value="dataform-001" /></label>
+        <!-- <label>Requested By: <input name="requested_by" value="admin-uuid-001" /></label> -->
+        <label>Data Owner ID: <input name="data_owner_id" /></label>
+        <label>RAM (MB): <input name="RAM" type="number" value="16" /></label>
+        <!-- <label>Num CPUs: <input name="num_cpus" type="number" value="2" /></label>
+        <label>Num GPUs: <input name="num_gpus" type="number" value="2" /></label> -->
+        <label>Disk Space (MB): <input name="memory_mb" type="number" value="8192" /></label>
+        <label>Data Size (bytes): <input name="data_size_bytes" type="number" /></label>
+        <label>Data Resource ID: <input name="data_resource_id" /></label>
+        <div class="form-actions">
+          <button type="submit">Submit Data Owner Form</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="outputFormSection" class="form-section hidden">
+      <h2>Output Owner Form</h2>
+      <form id="outputForm">
+        <label>Form ID: <input name="form_id" value="outputform-001" /></label>
+        <label>Requested By: <input name="requested_by" value="admin-uuid-001" /></label>
+        <label>Output Owner ID: <input name="output_owner_id" /></label>
+        <label>Num Server Rounds: <input name="num_server_rounds" type="number" value="10" /></label>
+        <label>Fraction Evaluate: <input name="fraction_evaluate" type="number" step="0.01" value="0.5" /></label>
+        <label>Local Epochs: <input name="local_epochs" type="number" value="1" /></label>
+        <label>Learning Rate: <input name="learning_rate" type="number" step="0.0001" value="0.01" /></label>
+        <label>Batch Size: <input name="batch_size" type="number" value="32" /></label>
+        <label>Model: <input name="model" value="AlexNet" /></label>
+        <label>Framework: <input name="framework" value="flwrlabs" /></label>
+        <label>Components (comma-separated key=val): <input name="components" placeholder="serverapp=... , clientapp=..." /></label>
+        <div class="form-actions">
+          <button type="submit">Submit Output Owner Form</button>
+        </div>
+      </form>
+    </section>
+
+    <div id="message" class="message hidden">
+      <h3 id="messageTitle">Form JSON</h3>
+      <pre id="messageJson"></pre>
+      <div class="form-actions">
+        <button id="messageClose" type="button">Close</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
